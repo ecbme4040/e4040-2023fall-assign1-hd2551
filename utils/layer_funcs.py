@@ -31,7 +31,10 @@ def affine_forward(x, w, b):
     ############################################################################
     #                   START OF YOUR CODE                                     #
     ############################################################################
-
+    N = x.shape[0]
+    x_reshaped = x.reshape(N, -1)
+    out = np.dot(x_reshaped, w) + b
+    
     #raise NotImplementedError
     ############################################################################
     #                    END OF YOUR CODE                                      #
@@ -62,7 +65,12 @@ def affine_backward(dout, x, w, b):
     ############################################################################
     #                   START OF YOUR CODE                                     #
     ############################################################################
-
+    N = x.shape[0]
+    x_reshaped = x.reshape(N, -1)
+    
+    dx = np.dot(dout, w.T).reshape(*x.shape)
+    dw = np.dot(x_reshaped.T, dout)
+    db = np.sum(dout, axis=0)
     #raise NotImplementedError
     ############################################################################
     #                    END OF YOUR CODE                                      #
@@ -88,7 +96,7 @@ def relu_forward(x):
     ############################################################################
     #                   START OF YOUR CODE                                     #
     ############################################################################
-
+    out = np.maximum(0, x)
     #raise NotImplementedError
     ############################################################################
     #                    END OF YOUR CODE                                      #
@@ -116,7 +124,7 @@ def relu_backward(dout, x):
     ############################################################################
     #                   START OF YOUR CODE                                     #
     ############################################################################
-
+    dx = dout * (x > 0)
     #raise NotImplementedError
     ############################################################################
     #                    END OF YOUR CODE                                      #
@@ -161,7 +169,18 @@ def softmax_loss(x, y):
     ############################################################################
     #                   START OF YOUR CODE                                     #
     ############################################################################
-
+    # Softmax function
+    exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
+    probs = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+    
+    # Cross-entropy loss
+    N = x.shape[0]
+    loss = -np.sum(np.log(probs[np.arange(N), y] + epsilon)) / N
+    
+    # Gradient of loss wrt x
+    dx = probs.copy()
+    dx[np.arange(N), y] -= 1
+    dx /= N
     #raise NotImplementedError
     ############################################################################
     #                    END OF YOUR CODE                                      #

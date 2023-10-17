@@ -109,7 +109,12 @@ class AffineLayer:
         ############################################################################
         #                         START OF YOUR CODE                               #
         ############################################################################
+        dX, dW, db = affine_backward(dout, X, W, b)
 
+        
+        self.gradients['W'] = dW
+        self.gradients['b'] = db
+        
         #raise NotImplementedError
         ############################################################################
         #                          END OF YOUR CODE                                #
@@ -182,13 +187,15 @@ class DenseLayer(AffineLayer):
         #   NOTE: use super().f() to call a parent class function                  #
         # - cache intermediate affine result                                       #
         ############################################################################
+        A = super().feedforward(X)
 
         #raise NotImplementedError
         ############################################################################
         # TODO: activation forward pass                                            #
         # NOTE: use self.activation_forward function                               #
         ############################################################################
-
+        out = self.activation_forward(A)
+        self.cache['A'] = A
         #raise NotImplementedError
         ############################################################################
         #                              END OF YOUR CODE                            #
@@ -224,14 +231,14 @@ class DenseLayer(AffineLayer):
         # - activation backward                                                    #
         #   remember to use functions in class                                     #
         ############################################################################
-
+        dA = self.activation_backward(dout, A)
         #raise NotImplementedError
         ############################################################################
         # TODO:                                                                    #
         # - affine backward                                                        #
         #   remember to use parent class functions                                 #
         ############################################################################
-
+        dX = super().backward(dA)
         #raise NotImplementedError
         ############################################################################
         #                              END OF YOUR CODE                            #

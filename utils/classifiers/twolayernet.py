@@ -51,7 +51,10 @@ class TwoLayerNet(object):
         # TODO: Feedforward                                                        #
         # NOTE: Use self.layer#.feedforward function you wrote in layer_funcs.py   #
         ############################################################################
-
+        out1 = self.layer1.feedforward(X)
+        
+        X = self.layer2.feedforward(out1)
+        
         #raise NotImplementedError
         ############################################################################
         #                          END OF YOUR CODE                                #
@@ -86,7 +89,14 @@ class TwoLayerNet(object):
         # mannually cache the parameters because it would be taken care of by the  #
         # functions in layer_utils.py                                              #
         ############################################################################
-
+        
+        data_loss, dscores = softmax_loss(scores, labels)
+        loss += data_loss
+ 
+        dout1 = self.layer2.backward(dscores)
+        
+        self.layer1.backward(dout1)
+        
         #raise NotImplementedError
         ############################################################################
         #                          END OF YOUR CODE                                #
@@ -140,7 +150,11 @@ class TwoLayerNet(object):
         # explicitly iterate through the parameters
         if optim == 'SGD':
             for name, param in params.items():
-                pass # your implementations here: update each parameter
+                param -= learning_rate * grads[name]
+        elif optim == 'SGD_momentum':
+            for name, param in params.items():
+                velocities[name] = momentum * velocities[name] - learning_rate * grads[name]
+                param += velocities[name]# your implementations here: update each parameter
 
         # implement the rest
 
@@ -176,7 +190,8 @@ class TwoLayerNet(object):
         ############################################################################
         #                         START OF YOUR CODE                               #
         ############################################################################
-
+        scores = self.forward(X)
+        preds = np.argmax(scores, axis=1)
         #raise NotImplementedError
         ############################################################################
         #                          END OF YOUR CODE                                #

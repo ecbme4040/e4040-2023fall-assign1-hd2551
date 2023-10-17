@@ -33,7 +33,7 @@ def logistic_regression_loss_naive(w, X, y, reg):
     - loss (float): the mean value of loss functions over N examples in minibatch.
     - gradient (float): gradient wrt w, an array of same shape as w
     """
-
+    N, D = X.shape
     loss = 0
     dw = np.zeros_like(w)
 
@@ -48,7 +48,34 @@ def logistic_regression_loss_naive(w, X, y, reg):
     ############################################################################
     #                              START OF YOUR CODE                          #
     ############################################################################
+    epsilon = 1e-12  
+
+    for i in range(N):
+        score = 0
+        for j in range(D):
+            score += w[j] * X[i, j]
+        prob = 1 / (1 + np.exp(-score))
+        
+        # Compute the loss for this example
+        if y[i] == 1:
+            single_example_loss = -np.log(prob + epsilon)
+        else:
+            single_example_loss = -np.log(1 - prob + epsilon)
+        
+        loss += single_example_loss
+        
+        for j in range(D):
+            dw[j] += (prob - y[i]) * X[i, j]
+
+    # Average the loss and gradient
+    loss /= N
+    dw /= N
     
+    # Add regularization
+    loss += 0.5 * reg * np.sum(w * w)
+    dw += reg * w
+
+
     #raise NotImplementedError
     ############################################################################
     #                               END OF YOUR CODE                           #
@@ -77,7 +104,8 @@ def sigmoid(x):
     ############################################################################
     #                          START OF YOUR CODE                              #
     ############################################################################
-    
+    h = 1 / (1 + np.exp(-x))
+
     #raise NotImplementedError
     ############################################################################
     #                          END OF YOUR CODE                                #
@@ -118,7 +146,13 @@ def logistic_regression_loss_vectorized(w, X, y, reg):
     ############################################################################
     #                          START OF YOUR CODE                              #
     ############################################################################
-    
+    N, D = X.shape
+    scores = X @ w
+    probs = sigmoid(scores)
+    loss = -np.sum(y * np.log(probs) + (1 - y) * np.log(1 - probs))
+    loss /= N
+    loss += 0.5 * reg * np.sum(w * w)
+    dw = (X.T @ (probs - y)) / N + reg * w
     #raise NotImplementedError
     ############################################################################
     #                          END OF YOUR CODE                                #

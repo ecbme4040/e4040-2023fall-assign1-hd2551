@@ -16,8 +16,6 @@ def softmax(x):
     - h: (float) a numpy array of shape (N, C), containing the softmax of x
     """
 
-    h = np.zeros_like(x)
-
     ############################################################################
     # TODO:                                                                    #
     # Implement the softmax function.                                          #
@@ -27,6 +25,11 @@ def softmax(x):
     ############################################################################
     #                     START OF YOUR CODE                                   #
     ############################################################################
+    x -= np.max(x, axis=1, keepdims=True)
+    
+    exp_x = np.exp(x)
+    h = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+    
 
     # raise NotImplementedError
     ############################################################################
@@ -81,6 +84,25 @@ def softmax_loss_naive(W, X, y, reg):
     ############################################################################
     #                     START OF YOUR CODE                                   #
     ############################################################################
+    N, D = X.shape
+    K = W.shape[1]
+    
+    for i in range(N):
+        scores = X[i].dot(W)
+        scores -= np.max(scores)  # Normalize for numerical stability
+        exp_scores = np.exp(scores)
+        probs = exp_scores / np.sum(exp_scores)
+        loss += -np.log(probs[y[i]])
+        
+        for k in range(K):
+            dW[:, k] += X[i] * (probs[k] - (k == y[i]))
+
+    # Average over all examples and add regularization
+    loss /= N
+    loss += 0.5 * reg * np.sum(W * W)
+
+    dW /= N
+    dW += reg * W
 
     # raise NotImplementedError
     ############################################################################
@@ -113,7 +135,8 @@ def onehot(x, K):
     ############################################################################
     #                     START OF YOUR CODE                                   #
     ############################################################################
-
+    y[np.arange(N), x] = 1
+    
     # raise NotImplementedError
     ############################################################################
     #                     END OF YOUR CODE                                     #
@@ -135,7 +158,7 @@ def cross_entropy(p, q):
         each data point
     """
 
-    h = np.zeros(p.shape[0])
+    
 
     ############################################################################
     # TODO:                                                                    #
@@ -144,7 +167,7 @@ def cross_entropy(p, q):
     ############################################################################
     #                     START OF YOUR CODE                                   #
     ############################################################################
-
+    h = -np.sum(p * np.log(q), axis=1)
     # raise NotImplementedError
     ############################################################################
     #                     END OF YOUR CODE                                     #
@@ -186,7 +209,23 @@ def softmax_loss_vectorized(W, X, y, reg):
     ############################################################################
     #                     START OF YOUR CODE                                   #
     ############################################################################
+    N, D = X.shape
+    K = W.shape[1]
+    
+    scores = X.dot(W)
+    scores -= np.max(scores, axis=1, keepdims=True)
+    exp_scores = np.exp(scores)
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+    
+    correct_log_probs = -np.log(probs[np.arange(N), y])
+    loss = np.sum(correct_log_probs) / N
+    loss += 0.5 * reg * np.sum(W * W)
 
+    dscores = probs
+    dscores[np.arange(N), y] -= 1
+    dW = X.T.dot(dscores)
+    dW /= N
+    dW += reg * W
     # raise NotImplementedError
     ############################################################################
     #                     END OF YOUR CODE                                     #

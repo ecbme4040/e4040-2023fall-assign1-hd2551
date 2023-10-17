@@ -53,7 +53,9 @@ class MLP:
         ############################################################################
         # TODO: Feedforward                                                        #
         ############################################################################
-
+        for layer in self.layers:
+            X = layer.feedforward(X)
+            
         #raise NotImplementedError
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -84,12 +86,15 @@ class MLP:
         ############################################################################
         # TODO: Backpropogation                                                    #
         ############################################################################
-
+        data_loss, dscores = softmax_loss(scores, labels)
+        for layer in reversed(self.layers):
+            dscores = layer.backward(dscores)
         #raise NotImplementedError
         ############################################################################
         # TODO: Add L2 regularization                                              #
         ############################################################################
-
+        squared_weights = sum(np.sum(layer.params['W']**2) for layer in self.layers)
+        loss = data_loss + 0.5 * self.reg * squared_weights
         #raise NotImplementedError
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -131,7 +136,17 @@ class MLP:
         ############################################################################
         #                            START OF YOUR CODE                            #
         ############################################################################
+        grads = {name: grad + self.reg * params[name] for name, grad in grads.items()}
 
+        if optim == 'SGD':
+            for name, param in params.items():
+                param -= learning_rate * grads[name]
+        elif optim == 'SGD_momentum':
+            if self.velocities is None:
+                self.velocities = {name: np.zeros_like(param) for name, param in params.items()}
+            for name, param in params.items():
+                self.velocities[name] = momentum * self.velocities[name] - learning_rate * grads[name]
+                param += self.velocities[name]
         #raise NotImplementedError
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -158,7 +173,9 @@ class MLP:
         ############################################################################
         #                             START OF YOUR CODE                           #
         ############################################################################
-
+        scores = self.forward(X)
+        predictions = np.argmax(scores, axis=1)
+        
         #raise NotImplementedError
         ############################################################################
         #                             END OF YOUR CODE                             #

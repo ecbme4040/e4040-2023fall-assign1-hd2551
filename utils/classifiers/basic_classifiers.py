@@ -88,7 +88,9 @@ class BasicClassifier:
             ########################################################################
             #                     START OF YOUR CODE                               #
             ########################################################################
-
+            idx = np.random.choice(num_train, batch_size, replace=True)
+            X_batch = X[idx]
+            y_batch = y[idx]
             # raise NotImplementedError
             ########################################################################
             #                       END OF YOUR CODE                               #
@@ -106,6 +108,11 @@ class BasicClassifier:
             ########################################################################
             #                     START OF YOUR CODE                               #
             ########################################################################
+            if optim == "SGD":
+                self.W -= learning_rate * grad
+            elif optim == "momentum":
+                self.velocity = momentum * self.velocity - learning_rate * grad
+                self.W += self.velocity
 
             # raise NotImplementedError
             ########################################################################
@@ -164,7 +171,7 @@ class LogisticRegression(BasicClassifier):
 
     def predict(self, X):
 
-        y_pred = np.zeros(X.shape[0])
+        
 
         ########################################################################
         # TODO:                                                                #
@@ -176,6 +183,9 @@ class LogisticRegression(BasicClassifier):
         ########################################################################
         #                     START OF YOUR CODE                               #
         ########################################################################
+        scores = X.dot(self.W)
+        y_pred = np.where(scores > 0, 1, 0)
+        return y_pred
 
         # raise NotImplementedError
         ########################################################################
@@ -197,7 +207,7 @@ class Softmax(BasicClassifier):
 
     def predict(self, X):
 
-        y_pred = np.zeros(X.shape[0])
+        
 
         ########################################################################
         # TODO:                                                                #
@@ -208,7 +218,8 @@ class Softmax(BasicClassifier):
         ########################################################################
         #                     START OF YOUR CODE                               #
         ########################################################################
-
+        scores = X.dot(self.W)
+        y_pred = np.argmax(scores, axis=1)
         # raise NotImplementedError
         ########################################################################
         #                    END OF YOUR CODE                                  #
